@@ -1,0 +1,66 @@
+{%include './header.html' %}
+            <form>
+
+                <div class="mdui-textfield mdui-textfield-floating-label">
+                    <label class="mdui-textfield-label">短网址</label>
+                    <input id="short_url" class="mdui-textfield-input" type="text" required/>
+                </div>
+                
+                <br/>
+                
+                <div class="mdui-row-xs-2">
+                    <div class="mdui-col">
+                        <button class="mdui-btn mdui-btn-raised mdui-btn-block" type="reset">重置</button>
+                    </div>
+
+                    <div class="mdui-col">
+                        <button id="submit" onclick="return summit()" class="mdui-btn mdui-btn-raised mdui-btn-block">查询</button>
+                    </div>
+                </div>
+            <form>
+
+            <script type="text/javascript">
+                function summit() {
+                    let load_element = load('正在查询');
+                    let short_url = $('#short_url').val();
+                    
+                    if (!short_url) {
+                        load_element.remove();
+
+                        mdui.alert('参数错误');
+                        
+                        return false;
+                    }
+
+                    if (!is_url(short_url)) {
+                        load_element.remove();
+
+                        mdui.alert('请输入完整短网址');
+                        
+                        return false;
+                    }
+
+                    short_url = short_url.split('/');
+                    let domain = short_url[2];
+                    let signature = short_url[3];
+
+                    let post_data = {
+                        'type': 'information',
+                        'domain': domain,
+                        'signature': signature
+                    };
+                    axios.post('./api/get', post_data)
+                        .then(function(response) {
+                            let data = response.data.information;
+                            load_element.remove();
+                            if (typeof data == "string") {
+                                mdui.alert(data);
+                            } else {
+                                mdui.alert('长链接:' + data.long_url + '<br/>有效期:' + data.valid_time + '<br/>次数:' + data.count + '<br/>时间:' + timestamp_to_time(data.timestmap));
+                            }
+                    });
+                    
+                    return false;
+                }
+            </script>
+{%include './footer.html' %}
